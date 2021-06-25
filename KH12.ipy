@@ -1,0 +1,125 @@
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
+
+## Machine Learning intro [60%]
+
+# 1. załaduj dane z pliku `train.csv` do dataframe [10%]
+
+df = pd.read_csv("train.csv")
+df
+
+# 2. analogicznie do ćwiczeń z zajęć stwórz nowe zmienne wykonując następujące transformacje:
+#     - `MSZoning` - one hot encoding [10%]
+#     - `LotShape` - one hot encoding [10%]
+#     - `LotArea` - skalowanie od 0 do 1 [10%]
+#     - `OverallCond` - standaryzacja [10%]
+
+
+#     - `MSZoning` - one hot encoding 
+x = (df[["MSZoning"]])
+x.shape
+x
+
+my_encoder = OneHotEncoder(sparse=False)
+my_encoder.fit(x)
+
+my_encoder.categories_
+
+xohe = my_encoder.transform(x)
+xohe
+
+#     - `LotShape` - one hot encoding
+y = (df[["LotShape"]])
+y.shape
+y
+
+my_encoder2 = OneHotEncoder(sparse=False)
+my_encoder2.fit(y)
+
+my_encoder2.categories_
+
+yohe = my_encoder2.transform(y)
+yohe
+
+#     - `LotArea` - skalowanie od 0 do 1 
+
+from sklearn.preprocessing import MinMaxScaler
+
+z = (df[["LotArea"]])
+z.shape
+z
+
+my_scaler = MinMaxScaler()
+my_scaler.fit(z)
+
+[my_scaler.data_min_, my_scaler.data_max_]
+
+zscal = my_scaler.transform(z)
+zscal
+
+
+
+#     - `OverallCond` - standaryzacja
+from sklearn.preprocessing import StandardScaler
+
+
+a = (df[["OverallCond"]])
+a.shape
+a
+
+my_scaler = StandardScaler()
+my_scaler.fit(a)
+
+[my_scaler.mean_, my_scaler.var_]
+
+ascal = my_scaler.transform(a)
+ascal
+
+
+## Regresja logistyczna [40%]
+
+# Klasyfikator dla zbioru breast cancer
+# Zbuduj klasyfikator modelem LogisticRegression
+
+from sklearn.datasets import load_breast_cancer
+
+# 1. Wczytaj data jako X i target jako Y [10%]
+# 2. Przeanalizuj kształt danych [10%]
+# 3. Podziel dane na zbiór treningowy i testowy metodą train_test_split
+# 4. Dopasuj model na części treningowej i policz score dopasowania do danych
+from sklearn.model_selection import train_test_split
+
+cancer = load_breast_cancer()
+
+X = cancer.data
+Y = cancer.target
+
+pd.DataFrame(cancer['data'], columns=cancer.feature_names)
+cancer.target_names
+
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=.30, random_state=0)
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.multiclass import OneVsRestClassifier
+
+# Create an instance of Logistic Regression Classifier and fit the data.
+from sklearn.metrics import confusion_matrix, classification_report
+
+logreg = LogisticRegression(random_state=0)
+logreg.fit(cancer.data, cancer.target)
+predictions = logreg.predict(cancer.data)
+
+# Calculate predictions confusion matrix
+print("Mean accuracy for train set: \n", logreg.score(cancer.data, cancer.target))
+print("Confusion matrix ", cancer.target_names, ": \n", confusion_matrix(cancer.target, predictions))
+print("Classification report: \n", classification_report(cancer.target, predictions))
+
+
+
+classifier = OneVsRestClassifier(LogisticRegression(random_state=0))
+classifier.fit(X_train, Y_train)
+Y_score = classifier.decision_function(X_test)
+print(Y_score.shape)
